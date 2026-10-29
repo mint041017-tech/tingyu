@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#1b221e;font-family:system-ui,"Segoe UI","PingFang SC",sans-serif;color:#e5ebde}
+  .sheet{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px;padding:34px}
+  .concept{padding:24px;border:1px solid #3d4940;border-radius:24px;background:#242d27}
+  .concept h2{margin:0 0 4px;font-size:18px;font-weight:600}
+  .concept p{margin:0 0 20px;font-size:13px;color:#a8b5a6}
+  .row{display:flex;align-items:flex-end;gap:22px}
+  .big{width:240px;height:240px}
+  .mid{width:96px;height:96px}
+  .small{width:44px;height:44px}
+  .tiny{width:26px;height:26px}
+  .light{background:#f7f4ed;border-radius:18px;padding:18px;display:flex;align-items:center;gap:16px}
+  .light .mid{background:transparent}
+  svg{display:block;width:100%;height:100%}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <section class="concept">
+    <h2>A · 窗隅</h2><p>圆拱门与声波，安静的一角。</p>
+    <svg class="big" viewBox="0 0 1024 1024" aria-label="概念 A 窗隅">
+      <defs><linearGradient id="ag" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5d7a64"/><stop offset="1" stop-color="#3c5345"/></linearGradient></defs>
+      <path d="M512 24C846 24 1000 178 1000 512S846 1000 512 1000 24 846 24 512 178 24 512 24Z" fill="url(#ag)"/>
+      <path d="M348 706V520a164 164 0 0 1 328 0v186" fill="none" stroke="#FFFDF8" stroke-width="54" stroke-linecap="round"/>
+      <circle cx="512" cy="694" r="24" fill="#FFFDF8"/>
+      <path d="M466 652a64 64 0 0 1 92 0M436 602a108 108 0 0 1 152 0" fill="none" stroke="#FFFDF8" stroke-width="22" stroke-linecap="round" opacity=".86"/>
+      <path d="M690 300c62-34 122-4 128 58-58 42-124 24-128-58Z" fill="#FFFDF8" opacity=".92"/>
+      <path d="M700 340c34-10 62-8 92 6" fill="none" stroke="#4a6452" stroke-width="10" stroke-linecap="round" opacity=".55"/>
+    </svg>
+    <div class="row" style="margin-top:18px">
+      <svg class="mid" viewBox="0 0 1024 1024"><path d="M512 24C846 24 1000 178 1000 512S846 1000 512 1000 24 846 24 512 178 24 512 24Z" fill="#4f6957"/><path d="M348 706V520a164 164 0 0 1 328 0v186" fill="none" stroke="#FFFDF8" stroke-width="54" stroke-linecap="round"/><circle cx="512" cy="694" r="24" fill="#FFFDF8"/><path d="M466 652a64 64 0 0 1 92 0M436 602a108 108 0 0 1 152 0" fill="none" stroke="#FFFDF8" stroke-width="22" stroke-linecap="round"/><path d="M690 300c62-34 122-4 128 58-58 42-124 24-128-58Z" fill="#FFFDF8"/></svg>
+      <div class="light"><svg class="mid" viewBox="0 0 1024 1024" style="width:64px;height:64px"><path d="M512 24C846 24 1000 178 1000 512S846 1000 512 1000 24 846 24 512 178 24 512 24Z" fill="#4f6957"/><path d="M348 706V520a164 164 0 0 1 328 0v186" fill="none" stroke="#FFFDF8" stroke-width="54" stroke-linecap="round"/><circle cx="512" cy="694" r="24" fill="#FFFDF8"/><path d="M466 652a64 64 0 0 1 92 0M436 602a108 108 0 0 1 152 0" fill="none" stroke="#FFFDF8" stroke-width="22" stroke-linecap="round"/><path d="M690 300c62-34 122-4 128 58-58 42-124 24-128-58Z" fill="#FFFDF8"/></svg><svg class="small" viewBox="0 0 1024 1024" style="width:44px;height:44px"><path d="M512 24C846 24 1000 178 1000 512S846 1000 512 1000 24 846 24 512 178 24 512 24Z" fill="#4f6957"/><path d="M348 706V520a164 164 0 0 1 328 0v186" fill="none" stroke="#FFFDF8" stroke-width="54" stroke-linecap="round"/><circle cx="512" cy="694" r="24" fill="#FFFDF8"/><path d="M466 652a64 64 0 0 1 92 0M436 602a108 108 0 0 1 152 0" fill="none" stroke="#FFFDF8" stroke-width="22" stroke-linecap="round"/><path d="M690 300c62-34 122-4 128 58-58 42-124 24-128-58Z" fill="#FFFDF8"/></svg></div>
+    </div>
+  </section>
+
+  <section class="concept">
+    <h2>B · 声叶</h2><p>叶子与声波共生，柔和有机。</p>
+    <svg class="big" viewBox="0 0 1024 1024">
+      <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5d7a64"/><stop offset="1" stop-color="#3c5345"/></linearGradient></defs>
+      <path d="M512 24C846 24 1000 178 1000 512S846 1000 512 1000 24 846 24 512 178 24 512 24Z" fill="url(#bg)"/>
+      <path d="M512 208c150 86 214 224 176 370-30 116-116 188-176 224-60-36-146-108-176-224-38-146 26-284 176-370Z" fill="#FFFDF8"/>
+      <path d="M512 280v470" stroke="#4f6957" stroke-width="22" stroke-linecap="round" opacity=".38"/>
+      <path d="M430 440c46-30 112-38 170-18M414 532c56-32 130-36 194-10M430 624c44-24 104-28 156-8" fill="none" stroke="#4f6957" stroke-width="26" stroke-linecap="round"/>
+    </svg>
+    <div class="row" style="margin-top:18px">
+      <svg class="mid" viewBox="0 0 1024 1024"><path d="M512 24C846 24 1000 178 1000 512S846 1000 512 1000 24 846 24 512 178 24 512 24Z" fill="#4f6957"/><path d="M512 208c150 86 214 224 176 370-30 116-116 188-176 224-60-36-146-108-176-224-38-146 26-284 176-370Z" fill="#FFFDF8"/><path d="M512 280v470" stroke="#4f6957" stroke-width="22" stroke-linecap="round" opacity=".38"/><path d="M430 440c46-30 112-38 170-18M414 532c56-32 130-36 194-10M430 624c44-24 104-28 156-8" fill="none" stroke="#4f6957" stroke-width="26" stroke-linecap="round"/></svg>
+      <div class="light"><svg class="small" viewBox="0 0 1024 1024" style="width:44px;height:44px"><path d="M512 24C846 24 1000 178 1000 512S846 1000 512 1000 24 846 24 512 178 24 512 24Z" fill="#4f6957"/><path d="M512 208c150 86 214 224 176 370-30 116-116 188-176 224-60-36-146-108-176-224-38-146 26-284 176-370Z" fill="#FFFDF8"/><path d="M430 440c46-30 112-38 170-18M414 532c56-32 130-36 194-10M430 624c44-24 104-28 156-8" fill="none" stroke="#4f6957" stroke-width="26" stroke-linecap="round"/></svg></div>
+    </div>
+  </section>
+
+  <section class="concept">
+    <h2>C · 月隅</h2><p>弯月与回声，像夜里留的一盏灯。</p>
+    <svg class="big" viewBox="0 0 1024 1024">
+      <defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5d7a64"/><stop offset="1" stop-color="#3c5345"/></linearGradient></defs>
+      <path d="M512 24C846 24 1000 178 1000 512S846 1000 512 1000 24 846 24 512 178 24 512 24Z" fill="url(#cg)"/>
+      <path d="M612 238c-50 34-82 92-82 158 0 106 86 192 192 192 28 0 54-6 78-17-38 120-150 207-283 207-164 0-297-133-297-297 0-145 104-266 242-291 52-9 104-4 150 14Z" fill="#FFFDF8"/>
+      <path d="M656 522a192 192 0 0 0 144 65" fill="none" stroke="#4f6957" stroke-width="20" stroke-linecap="round" opacity=".32"/>
+      <path d="M712 214a34 34 0 1 0 0 68 34 34 0 0 0 0-68ZM798 300a22 22 0 1 0 0 44 22 22 0 0 0 0-44Z" fill="#FFFDF8" opacity=".8"/>
+    </svg>
+    <div class="row" style="margin-top:18px">
+      <svg class="mid" viewBox="0 0 1024 1024"><path d="M512 24C846 24 1000 178 1000 512S846 1000 512 1000 24 846 24 512 178 24 512 24Z" fill="#4f6957"/><path d="M612 238c-50 34-82 92-82 158 0 106 86 192 192 192 28 0 54-6 78-17-38 120-150 207-283 207-164 0-297-133-297-297 0-145 104-266 242-291 52-9 104-4 150 14Z" fill="#FFFDF8"/><path d="M712 214a34 34 0 1 0 0 68 34 34 0 0 0 0-68ZM798 300a22 22 0 1 0 0 44 22 22 0 0 0 0-44Z" fill="#FFFDF8" opacity=".8"/></svg>
+      <div class="light"><svg class="small" viewBox="0 0 1024 1024" style="width:44px;height:44px"><path d="M512 24C846 24 1000 178 1000 512S846 1000 512 1000 24 846 24 512 178 24 512 24Z" fill="#4f6957"/><path d="M612 238c-50 34-82 92-82 158 0 106 86 192 192 192 28 0 54-6 78-17-38 120-150 207-283 207-164 0-297-133-297-297 0-145 104-266 242-291 52-9 104-4 150 14Z" fill="#FFFDF8"/></svg></div>
+    </div>
+  </section>
+
+  <section class="concept">
+    <h2>D · 回声角</h2><p>一角的线稿与三重回声，最像“隅”。</p>
+    <svg class="big" viewBox="0 0 1024 1024">
+      <defs><linearGradient id="dg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5d7a64"/><stop offset="1" stop-color="#3c5345"/></linearGradient></defs>
+      <path d="M512 24C846 24 1000 178 1000 512S846 1000 512 1000 24 846 24 512 178 24 512 24Z" fill="url(#dg)"/>
+      <path d="M300 300v424h424" fill="none" stroke="#FFFDF8" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M418 512a106 106 0 0 1 106-106M470 638a212 212 0 0 0 212-212" fill="none" stroke="#FFFDF8" stroke-width="34" stroke-linecap="round" opacity=".9"/>
+      <circle cx="546" cy="546" r="34" fill="#FFFDF8"/>
+      <path d="M714 266c64-30 122 2 126 64-56 40-122 20-126-64Z" fill="#FFFDF8" opacity=".9"/>
+    </svg>
+    <div class="row" style="margin-top:18px">
+      <svg class="mid" viewBox="0 0 1024 1024"><path d="M512 24C846 24 1000 178 1000 512S846 1000 512 1000 24 846 24 512 178 24 512 24Z" fill="#4f6957"/><path d="M300 300v424h424" fill="none" stroke="#FFFDF8" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/><path d="M418 512a106 106 0 0 1 106-106M470 638a212 212 0 0 0 212-212" fill="none" stroke="#FFFDF8" stroke-width="34" stroke-linecap="round" opacity=".9"/><circle cx="546" cy="546" r="34" fill="#FFFDF8"/><path d="M714 266c64-30 122 2 126 64-56 40-122 20-126-64Z" fill="#FFFDF8" opacity=".9"/></svg>
+      <div class="light"><svg class="small" viewBox="0 0 1024 1024" style="width:44px;height:44px"><path d="M512 24C846 24 1000 178 1000 512S846 1000 512 1000 24 846 24 512 178 24 512 24Z" fill="#4f6957"/><path d="M300 300v424h424" fill="none" stroke="#FFFDF8" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/><path d="M418 512a106 106 0 0 1 106-106M470 638a212 212 0 0 0 212-212" fill="none" stroke="#FFFDF8" stroke-width="34" stroke-linecap="round" opacity=".9"/><circle cx="546" cy="546" r="34" fill="#FFFDF8"/></svg></div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

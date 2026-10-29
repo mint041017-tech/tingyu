@@ -1,0 +1,26 @@
+name: tingyu_web
+description: 听隅 Web：支持六轨混音、收藏与定时渐弱的白噪音声音空间。
+publish_to: none
+version: 1.1.0+1100
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - web/assets/images/rain-nook.webp
+    - web/assets/audio/manifest.json
+    - assets/fonts/nook.ttf
+  fonts:
+    - family: NookUI
+      fonts:
+        - asset: assets/fonts/nook-ui.ttf

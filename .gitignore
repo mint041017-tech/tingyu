@@ -1,0 +1,30 @@
+# Secrets and local tooling
+web_app/packaging/keys/
+web_app/packaging/android/local.properties
+web_app/packaging/tools/
+**/*.jks
+**/*.keystore
+**/keystore.properties
+
+# Dependencies and build output
+**/node_modules/
+**/build/
+web_app/.dart_tool/
+web_app/.flutter-plugins-dependencies
+web_app/packaging/www/
+web_app/packaging/dist/
+**/.gradle/
+web_app/packaging/android/app/src/main/assets/public/
+web_app/packaging/ios/App/App/public/
+web_app/packaging/ios/App/Pods/
+web_app/packaging/ios/Pods/
+**/xcuserdata/
+web_app/dist/
+tingyu-web-deploy-*.zip
+*.log
+.DS_Store
+Thumbs.db
+
+# Built-in audio is fetched from OBS; keep only the manifest in git
+web_app/web/assets/audio/*.wav
+web_app/web/assets/audio/*.mp3

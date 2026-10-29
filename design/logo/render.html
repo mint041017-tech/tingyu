@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;width:100%;height:100%;background:transparent;overflow:hidden}
+  #stage{width:100vw;height:100vh;display:grid;place-items:center}
+  #stage svg{display:block;width:100%;height:100%}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+  const params = new URLSearchParams(location.search);
+  const type = params.get('type') || 'mark';
+  const size = Number(params.get('size') || 1024);
+  const leaf = (fg, bg, scale = 1, opacity = 1) => {
+    const s = scale;
+    return `<g transform="translate(512 512) scale(${s}) translate(-512 -512)" opacity="${opacity}">
+      <path d="M512 184c154 96 220 240 176 390-30 104-112 178-176 218-64-40-146-114-176-218-44-150 22-294 176-390Z" fill="${fg}"/>
+      <path d="M512 268v452" stroke="${bg}" stroke-width="18" stroke-linecap="round" opacity=".26"/>
+      <path d="M420 456c54-34 134-38 194-10M404 558c62-36 146-38 212-8M424 658c48-28 116-30 172-4" fill="none" stroke="${bg}" stroke-width="30" stroke-linecap="round" opacity=".9"/>
+      <circle cx="512" cy="248" r="14" fill="${bg}" opacity=".28"/>
+    </g>`;
+  };
+  const gradient = `<defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#5d7a64"/><stop offset=".55" stop-color="#4f6957"/><stop offset="1" stop-color="#3c5345"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".38" r=".62">
+      <stop stop-color="#aac4a2" stop-opacity=".22"/><stop offset="1" stop-color="#aac4a2" stop-opacity="0"/>
+    </radialGradient>
+  </defs>`;
+  const squircle = `<path d="M512 24C846 24 1000 178 1000 512S846 1000 512 1000 24 846 24 512 178 24 512 24Z"/>`;
+  let svg = '';
+  if (type === 'foreground') {
+    svg = `<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">${gradient}${leaf('#fffdf8', '#4f6957', .72)}</svg>`;
+  } else if (type === 'background') {
+    svg = `<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">${gradient}<rect width="1024" height="1024" fill="url(#g)"/></svg>`;
+  } else if (type === 'icon') {
+    svg = `<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">${gradient}
+      <rect width="1024" height="1024" fill="url(#g)"/>
+      ${leaf('#fffdf8', '#4f6957', .68)}
+    </svg>`;
+  } else if (type === 'splash') {
+    svg = `<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">${gradient}
+      <rect width="1024" height="1024" fill="#223027"/>
+      <g transform="translate(0 -118)">${leaf('#fffdf8', '#3c5345', .53)}</g>
+      <text x="512" y="710" text-anchor="middle" fill="#f4f1e8" font-family="'Microsoft YaHei','PingFang SC',sans-serif" font-size="118" font-weight="600" letter-spacing="22">听隅</text>
+      <text x="512" y="792" text-anchor="middle" fill="#a8b5a6" font-family="system-ui,sans-serif" font-size="30" letter-spacing="16">QUIET NOOK</text>
+    </svg>`;
+  } else {
+    svg = `<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">${gradient}
+      <g>${squircle}</g>
+      <path d="M512 24C846 24 1000 178 1000 512S846 1000 512 1000 24 846 24 512 178 24 512 24Z" fill="url(#g)"/>
+      <path d="M512 24C846 24 1000 178 1000 512S846 1000 512 1000 24 846 24 512 178 24 512 24Z" fill="none" stroke="#fffdf8" stroke-opacity=".10" stroke-width="8"/>
+      ${leaf('#fffdf8', '#4f6957', 1)}
+    </svg>`;
+  }
+  document.getElementById('stage').innerHTML = svg;
+</script>
+</body>
+</html>
