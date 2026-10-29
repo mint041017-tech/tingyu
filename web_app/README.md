@@ -3,6 +3,9 @@
 给自己，留一小片安静。多轨白噪音、番茄钟、收藏与定时渐弱，现已适配 Web、Windows、Android、iPhone/iPad 与 macOS。
 
 ## 交付物
+> 已发布的安装包与预打包源文件见 GitHub Releases：https://github.com/mint041017-tech/tingyu/releases/latest
+> 下表是本地构建输出路径，GitHub 仓库不跟踪二进制制品。
+
 
 | 端 | 路径 | 状态 |
 | --- | --- | --- |
