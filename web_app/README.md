@@ -1,118 +1,89 @@
-# 听隅 · Quiet Nook 1.1.0
+# 听隅 2.0.0 · 原生多端
 
-给自己，留一小片安静。多轨白噪音、番茄钟、收藏与定时渐弱，现已适配 Web、Windows、Android、iPhone/iPad 与 macOS。
+这次不是 WebView/Electron 套壳：Android、iPhone/iPad、Windows、macOS 都是原生 Flutter 构建，音频由 **flutter_soloud** 在原生音频线程混音；Web 仍保留 Flutter Web + WebAudio 版本。
 
-## 交付物
-> 已发布的安装包与预打包源文件见 GitHub Releases：https://github.com/mint041017-tech/tingyu/releases/latest
-> 下表是本地构建输出路径，GitHub 仓库不跟踪二进制制品。
+## 平台
 
-
-| 端 | 路径 | 状态 |
+| 平台 | 音频 | 构建 |
 | --- | --- | --- |
-| Android | [dist/android/Tingyu-v1.1.0-release.apk](dist/android/Tingyu-v1.1.0-release.apk) | 已签名、已核验版本/权限/压缩包完整性 |
-| Windows 安装版 | [dist/windows/Tingyu-v1.1.0-Setup.exe](dist/windows/Tingyu-v1.1.0-Setup.exe) | NSIS 安装包；载荷已解包并真实启动核验 |
-| Windows 便携版 | [dist/windows/Tingyu-v1.1.0-Portable.exe](dist/windows/Tingyu-v1.1.0-Portable.exe) | 单文件便携版；若被 SmartScreen/安全软件拦截，请改用安装版或免安装 ZIP |
-| Windows 免安装包 | [dist/windows/Tingyu-v1.1.0-win64-portable.zip](dist/windows/Tingyu-v1.1.0-win64-portable.zip) | 解压后运行 `Tingyu.exe`；已真实启动核验 |
-| iOS / iPad | [dist/ios-mac/Tingyu-v1.1.0-ios-source.zip](dist/ios-mac/Tingyu-v1.1.0-ios-source.zip) | 预打包：Xcode 工程、图标、启动屏、构建脚本 |
-| macOS | [dist/ios-mac/Tingyu-v1.1.0-macos-source.zip](dist/ios-mac/Tingyu-v1.1.0-macos-source.zip) | 预打包：Electron 配置、icns、构建脚本 |
-| Web | [dist/web/Tingyu-web-v1.1.0-deploy.zip](dist/web/Tingyu-web-v1.1.0-deploy.zip) | 可直接部署到站点根目录 |
+| Android | SoLoud 原生多轨，6 路循环/音量/淡出 | `flutter build apk --release` |
+| iPhone / iPad | SoLoud + AVAudioSession(`playback`) | Xcode / `flutter build ipa` |
+| Windows | SoLoud + WASAPI | `flutter build windows --release` |
+| macOS | SoLoud + CoreAudio | Xcode / `flutter build macos --release` |
+| Web | WebAudio（原 JS 引擎） | `flutter build web --release` |
 
-校验和见各目录下的 `SHA256SUMS.txt`，机器可读结果见 `dist/verification.json`。
+## 功能
 
-## 这版新增
+- 28 种声音、最多 6 轨混音、每轨独立音量、总音量、OBS 按需加载与本地缓存。
+- 26 段录音在原生侧做 0.12 秒循环交叉淡化；白/粉/棕/水下为原生合成并缓存。
+- 收藏、草稿、主题、默认渐弱、专注记录走 `shared_preferences`；导入音频复制到应用支持目录，不上传。
+- 番茄钟：原生计时、提示音（SoLoud 合成铃/木鱼）、Android/iOS 系统定时通知、桌面即时通知、统计与恢复。
+- 原有页面、动效、主题、响应式布局与品牌启动动画保留。
 
-- **番茄钟**：25/45/60 分钟与自定义专注，短休/长休，2–8 轮长休间隔；开始、暂停、跳过、重置、自动衔接；完成提示音（清铃/木鱼）与音量；系统通知；专注时自动播放混音、休息时暂停；切页/刷新/切后台按真实结束时间恢复；今日分钟、完成次数、连续天数与最近 7 天记录；全主题适配。
-- **动效**：页面切换淡入位移、导航胶囊与图标、播放键回弹、场景卡悬停、选项卡、主题按钮与状态切换；全部尊重“减少动态效果”和系统 `prefers-reduced-motion`。
-- **Logo 与启动**：新的“声叶”标记（叶片 + 三条声波叶脉），同步 favicon、应用图标、启动屏；Web 启动壳有叶片描线/叶脉绘制/内容浮现，Android 原生启动屏、iOS LaunchScreen、Windows 启动窗与 Web 启动壳使用同一套品牌语言。
-- **多端壳**：Capacitor 7（Android/iOS/iPad）+ Electron 38（Windows/macOS）；统一 Web 资源，保留快速首屏 HTML 启动壳。
-
-## 构建与验证
-
-### Web
+## 构建
 
 ```bash
 cd web_app
-flutter analyze
-flutter test
-flutter build web --release
-node tools/ui-check.mjs      # 需要先启动 build/web 静态服务
-node tools/boot-check.mjs
-node tools/audio-check.mjs
+flutter pub get
 ```
 
-### Android（Windows 本机已验证）
+### Android
 
 ```bash
-cd web_app/packaging
-npm install
-node scripts/sync-web.mjs
-npx cap sync android
-# 需要 JDK 21；本机工具链在 packaging/tools/jdk-21.0.2
-cd android
-gradlew.bat assembleRelease
+export JAVA_HOME=/path/to/jdk-21
+flutter build apk --release
 ```
 
-签名密钥在 `packaging/keys/tingyu-release.jks`，口令在 `packaging/keys/keystore.properties`。升级时必须复用同一密钥，并递增 `versionCode`。
+- 包名 `com.citro.tingyu`，versionCode `20000`，versionName `2.0.0`。
+- 使用 `packaging/keys/tingyu-release.jks` 签名；不要把密钥提交到仓库。
+- 已声明 INTERNET、POST_NOTIFICATIONS、VIBRATE、WAKE_LOCK。
 
-### Windows（Windows 本机已验证）
+### Windows
 
 ```bash
-cd web_app/packaging
-npm install
-node scripts/sync-web.mjs
-npx electron-packager dist/win-stage "听隅" --platform=win32 --arch=x64 \
-  --out=dist/win-final --asar --icon=resources/icon.ico \
-  --app-version=1.1.0 --executable-name=Tingyu \
-  --electron-version=38.8.6 --electron-zip-dir="<Electron 缓存目录>"
-npx electron-builder --win nsis portable --x64 \
-  --prepackaged "dist/win-final/听隅-win32-x64" \
-  --config.directories.output=dist/installer-final
+flutter build windows --release
 ```
 
-Windows 安装包/便携版未使用商业代码签名证书，首次运行可能出现 SmartScreen 提示；应用本身以 Electron 38 + 本地 `app://` 协议运行，不依赖外网服务器即可打开界面。安装包载荷与免安装 ZIP 已在本机真实启动核验。
+输出 `build/windows/x64/runner/Release/tingyu.exe`，整个 Release 目录即便携版。
 
-### iOS / iPad（需 macOS + Xcode + CocoaPods）
+### iOS / iPad
 
 ```bash
-cd web_app/packaging
-npm install
-export TEAM_ID=你的Apple团队ID
-./build_ios.sh
+flutter pub get
+cd ios && pod install
+open Runner.xcworkspace
 ```
 
-脚本会同步 Web 资源、执行 `pod install`、归档并导出 IPA。工程已设置：
+工程同时提供 CocoaPods 配置（部分通知/文件选择插件尚未迁移 SPM）。在 Xcode 选择 Team 后 Archive/Export；或 `flutter build ipa --release`。工程已设置：
 
-- Bundle ID：`com.citro.tingyu`，版本 `1.1.0 (10100)`
-- iPhone + iPad（`TARGETED_DEVICE_FAMILY = 1,2`），iPad 支持四方向与分屏
-- 全局启动屏 `LaunchScreen`、1024 图标、深绿品牌启动色
-- `UIBackgroundModes: audio` 与 `AVAudioSession(.playback, mixWithOthers)`，尽量保持锁屏/后台可听
-- `ITSAppUsesNonExemptEncryption = false`，便于 TestFlight
+- Bundle ID `com.citro.tingyu`
+- iPhone + iPad（`TARGETED_DEVICE_FAMILY = 1,2`），iPad 四方向
+- `UIBackgroundModes: audio`
+- 深绿启动屏、1024 AppIcon
+- `ITSAppUsesNonExemptEncryption = false`
 
-### macOS（需 macOS）
+### macOS
 
 ```bash
-cd web_app/packaging
-npm install
-./build_mac.sh
+flutter pub get
+cd macos && pod install
+cd .. && flutter build macos --release
 ```
 
-输出 `packaging/dist/Tingyu-1.1.0-x64.dmg` 与 `Tingyu-1.1.0-arm64.dmg`（未签名，本地自用）。图标、启动窗、深浅色、网络权限配置已就绪。
+`com.apple.security.network.client` 与用户选择文件读取权限已加入 entitlements；签名/公证需要在 Mac 上配置 Team。
 
-## 验证记录
+## 验证
 
-- `flutter analyze`：无问题；`flutter test`：3 项通过。
-- Playwright（393×852 与 1440×1000）：无控制台错误；首页、专注、声音、收藏、设置可切换；番茄钟 `25:00 → 24:57`，导航与顶栏倒计时同步；主题切换、暂停/继续、清铃试听调用正常。
-- 音频实测：点击播放后 3 路声音 `playing: true`，AudioContext `running`，`sources: 3`，RMS `0.044`；提示音返回 `true`。
-- 启动动画：Web 启动壳的 `brandIn/leafIn/veinIn` 均在运行，manifest 与 SVG 标记存在。
-- 番茄钟 E2E：开始后刷新仍以 `专注 00:52` 恢复；真实倒计时归零后自动进入短休息，今日记录 +1、提示音被调用 1 次；明暗主题在刷新后保持。
-- Android：`versionCode 10100 / versionName 1.1.0`，minSdk 23、targetSdk 35；`apksigner verify` 通过；`unzip -t` 无错误；APK 内无重复 WAV，Service Worker 已对原生壳关闭。
-- Windows：打包目录与安装包载荷分别真实启动，Flutter 首帧、语义树、音频桥均正常；安装包/便携版均为 1.1.0。
-- iOS/macOS：工程、图标、启动屏、设备族、权限与版本已做静态预检，详见 `dist/ios-mac/ios-mac-preflight.json`。
+- `flutter analyze`：0 error。
+- `flutter test`：模型/存储单测。
+- `flutter test integration_test/native_smoke_test.dart -d windows`：真实初始化 SoLoud、播放 3 轨、定时结束、提示音、收藏持久化。
+- Android APK：`apksigner verify`、`unzip -t`、aapt 版本/权限核验。
+- Windows：Release 应用真实启动；安装包载荷可解包启动。
+- iOS/macOS：静态预检（Bundle、设备族、背景音频、图标、启动屏、entitlements）。
 
-## 边界与注意
+## 已知边界
 
-- 内置 28 种声音仍从公开 OBS 按需加载，需要联网；个人导入音频只留在此设备的 IndexedDB，不上传。
-- 网页/壳内后台计时按真实结束时间恢复，但系统可能在锁屏后挂起 WebView，提示音与系统通知不保证像原生闹钟一样准时；番茄钟页内已明确提示。
-- Android/iOS 原生壳当前使用 Web 通知与页内提示，不包含原生闹钟/前台服务；如需商店级后台提醒，需要再接原生本地通知插件。
-- Windows 安装包与便携版未签名；macOS 包按未签名本地自用配置准备。
-- iOS/iPad/macOS 无法在 Windows 上完成最终二进制，已交付可直接在 Mac 上构建的预打包工程与脚本。
+- Android 没有接入前台服务/MediaSession，长时间锁屏后台仍可能被系统回收；iOS 通过后台音频模式尽量保持。
+- 系统通知在 Android/iOS 走本地通知；Windows 走 `local_notifier` 即时通知，macOS 走本地通知。
+- 原生版不迁移 Web 的 localStorage/IndexedDB 旧数据。
+- 首次播放某声音需要从 OBS 下载并缓存，之后离线可复用缓存。

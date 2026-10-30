@@ -28,3 +28,13 @@ Thumbs.db
 # Built-in audio is fetched from OBS; keep only the manifest in git
 web_app/web/assets/audio/*.wav
 web_app/web/assets/audio/*.mp3
+
+# Native Flutter generated files
+web_app/android/local.properties
+web_app/ios/Flutter/ephemeral/
+web_app/macos/Flutter/ephemeral/
+web_app/windows/flutter/ephemeral/
+web_app/ios/Pods/
+web_app/macos/Pods/
+web_app/.idea/
+*.iml

@@ -1,18 +1,41 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/semantics.dart';
-import 'audio_bridge.dart';
+import 'package:window_manager/window_manager.dart';
+import 'audio/nook_controller.dart';
 import 'brand.dart';
 import 'models.dart';
 import 'motion.dart';
+import 'platform/pomodoro_platform.dart';
 import 'pomodoro.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SemanticsBinding.instance.ensureSemantics();
+  await PomodoroPlatform.init();
+  if (!kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.windows ||
+          defaultTargetPlatform == TargetPlatform.macOS)) {
+    await windowManager.ensureInitialized();
+    const options = WindowOptions(
+      size: Size(1280, 860),
+      minimumSize: Size(820, 620),
+      center: true,
+      title: '听隅',
+      backgroundColor: Color(0xfff7f4ed),
+    );
+    unawaited(
+      windowManager.waitUntilReadyToShow(options, () async {
+        await windowManager.show();
+        await windowManager.focus();
+      }),
+    );
+  }
   final controller = NookController();
+  await controller.bootstrap();
   runApp(NookApp(controller: controller));
   WidgetsBinding.instance.addPostFrameCallback(
     (_) => unawaited(controller.initialize()),
@@ -250,6 +273,23 @@ class NookApp extends StatelessWidget {
       },
       themeAnimationDuration: NookMotion.base,
       themeAnimationCurve: NookMotion.standard,
+      builder: (context, child) {
+        final p = Palette.of(context);
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle(
+            statusBarColor: p.bg,
+            statusBarIconBrightness: p.dark
+                ? Brightness.light
+                : Brightness.dark,
+            statusBarBrightness: p.dark ? Brightness.dark : Brightness.light,
+            systemNavigationBarColor: p.bg,
+            systemNavigationBarIconBrightness: p.dark
+                ? Brightness.light
+                : Brightness.dark,
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       home: NookHome(controller: controller),
     ),
   );
@@ -268,6 +308,8 @@ class _NookHomeState extends State<NookHome> {
   int page = 0;
   int previousPage = 0;
   int _lastPomoTick = 0;
+  bool _introVisible = !kIsWeb;
+  bool _introMounted = !kIsWeb;
   String category = '全部';
   String query = '';
   final search = TextEditingController();
@@ -285,6 +327,25 @@ class _NookHomeState extends State<NookHome> {
     super.initState();
     pomo = PomodoroController(c);
     pomo.addListener(_onPomodoro);
+    if (_introMounted) unawaited(_armNativeIntro());
+  }
+
+  Future<void> _armNativeIntro() async {
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.windows ||
+            defaultTargetPlatform == TargetPlatform.macOS)) {
+      for (var i = 0; i < 80; i++) {
+        try {
+          if (await windowManager.isVisible()) break;
+        } catch (_) {}
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      }
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 220));
+    if (!mounted) return;
+    Timer(const Duration(milliseconds: 900), () {
+      if (mounted) setState(() => _introVisible = false);
+    });
   }
 
   void _onPomodoro() {
@@ -447,11 +508,12 @@ class _NookHomeState extends State<NookHome> {
       'title': scene.title,
       'autoplay': true,
     })) {
-      if (!keepTimer)
+      if (!keepTimer) {
         await act('timer', {
           'seconds': scene.minutes * 60,
           'fadeSeconds': scene.fadeSeconds,
         });
+      }
       c.markLoaded();
       if (keepTimer) toast('已切换场景，保留当前定时。');
     }
@@ -474,8 +536,9 @@ class _NookHomeState extends State<NookHome> {
           '有声音暂时不可用',
           '这份配方有 ${all.length - tracks.length} 个本地声音缺失。仅${autoplay ? '播放' : '载入'}其余可用声音？',
           accept: autoplay ? '播放可用声音' : '载入可用声音',
-        ))
+        )) {
       return;
+    }
     final keepTimer = c.hasTimer;
     if (await act('load', {
       'tracks': tracks,
@@ -485,11 +548,12 @@ class _NookHomeState extends State<NookHome> {
       await act('master', {
         'value': (favorite['master'] as num? ?? 70).clamp(0, 100),
       });
-      if (!keepTimer && favorite['seconds'] is num)
+      if (!keepTimer && favorite['seconds'] is num) {
         await act('timer', {
           'seconds': favorite['seconds'],
           'fadeSeconds': favorite['fade'] ?? 30,
         });
+      }
       c.markLoaded(favorite['id'] as String);
       c.touchFavorite(favorite['id'] as String);
       if (!autoplay) {
@@ -934,7 +998,7 @@ class _NookHomeState extends State<NookHome> {
         page = 2;
         category = '本地';
       });
-      toast('声音已保存在此浏览器，可以加入混音了。');
+      toast(kIsWeb ? '声音已保存在此浏览器，可以加入混音了。' : '声音已保存在此设备，可以加入混音了。');
     }
   }
 
@@ -946,7 +1010,10 @@ class _NookHomeState extends State<NookHome> {
       data: media.copyWith(
         disableAnimations: media.disableAnimations || c.reducedMotion,
       ),
-      child: LayoutBuilder(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          LayoutBuilder(
       builder: (context, constraints) {
         final desktop = constraints.maxWidth >= 850;
         final wide = constraints.maxWidth >= 1200;
@@ -1193,6 +1260,24 @@ class _NookHomeState extends State<NookHome> {
                 ),
         );
       },
+          ),
+          if (_introMounted)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: AnimatedOpacity(
+                  opacity: _introVisible ? 1 : 0,
+                  duration: const Duration(milliseconds: 320),
+                  curve: NookMotion.exit,
+                  onEnd: () {
+                    if (!_introVisible && mounted) {
+                      setState(() => _introMounted = false);
+                    }
+                  },
+                  child: const NativeLaunchOverlay(),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -1562,7 +1647,7 @@ class _NookHomeState extends State<NookHome> {
               ],
             ),
           ),
-          if (trailing != null) trailing,
+          ?trailing,
         ],
       ),
     );
@@ -1690,7 +1775,7 @@ class _NookHomeState extends State<NookHome> {
             ),
             const SizedBox(height: 8),
             Text(
-              '提示：计时在切换到其他页面后仍会继续；关闭应用后，会按结束时间恢复。网页版不能替代系统闹钟。',
+              kIsWeb ? '提示：计时在切换到其他页面后仍会继续；关闭应用后，会按结束时间恢复。网页版不能替代系统闹钟。' : '提示：计时在切换到其他页面或后台后仍会继续；系统仍可能因省电策略暂停音频，请勿将计时用作系统闹钟。',
               style: TextStyle(fontSize: 12, color: p.muted, height: 1.7),
             ),
           ],
@@ -2267,9 +2352,9 @@ class _NookHomeState extends State<NookHome> {
 
   String get _notificationHint => switch (pomo.notificationPermission) {
     'granted' => pomo.settings.notify ? '完成时发送系统通知。' : '已允许，但当前没有开启。',
-    'denied' => '浏览器已拒绝通知，页内提醒仍会显示。',
+    'denied' => '${kIsWeb ? '浏览器' : '系统'}已拒绝通知，页内提醒仍会显示。',
     'unsupported' => '当前环境不支持系统通知，页内提醒仍会显示。',
-    _ => '首次开启时会请求浏览器权限。',
+    _ => '首次开启时会请求${kIsWeb ? '浏览器' : '系统'}权限。',
   };
 
   Widget _pomoDurationRow(
@@ -2568,7 +2653,7 @@ class _NookHomeState extends State<NookHome> {
       return;
     }
     if (permission == 'denied') {
-      toast('浏览器已拒绝通知，可以在站点设置里重新允许。');
+      toast(kIsWeb ? '浏览器已拒绝通知，可以在站点设置里重新允许。' : '系统已拒绝通知，可以在系统设置里重新允许。');
       return;
     }
     if (permission == 'unsupported') {
@@ -2813,7 +2898,7 @@ class _NookHomeState extends State<NookHome> {
             const SizedBox(width: 7),
             Expanded(
               child: Text(
-                '网页版在锁屏或切换应用后可能暂停声音；请勿将计时用作闹钟。',
+                kIsWeb ? '网页版在锁屏或切换应用后可能暂停声音；请勿将计时用作闹钟。' : '锁屏或切到后台时，音频会尽量继续；系统仍可能因省电策略暂停，请勿将计时用作闹钟。',
                 style: TextStyle(fontSize: 12, color: p.muted, height: 1.6),
               ),
             ),
@@ -3557,7 +3642,7 @@ class _NookHomeState extends State<NookHome> {
                 ),
                 const SizedBox(height: 9),
                 Text(
-                  '音频只保存在此浏览器，不会上传。支持浏览器可解码的常见格式，单个文件不超过 50 MB，时长 5 秒到 10 分钟。',
+                  kIsWeb ? '音频只保存在此浏览器，不会上传。支持浏览器可解码的常见格式，单个文件不超过 50 MB，时长 5 秒到 10 分钟。' : '音频只保存在此设备，不会上传。支持 WAV、MP3、M4A、OGG 等常见格式，单个文件不超过 50 MB。',
                   style: TextStyle(fontSize: 14, color: p.muted, height: 1.6),
                 ),
                 const SizedBox(height: 16),
@@ -4328,7 +4413,7 @@ class _NookHomeState extends State<NookHome> {
             context,
             Icons.headphones_outlined,
             '后台与锁屏',
-            '网页版在锁屏或切换应用后可能暂停声音；系统媒体控件取决于浏览器支持，关闭页面会结束播放。',
+            kIsWeb ? '网页版在锁屏或切换应用后可能暂停声音；系统媒体控件取决于浏览器支持，关闭页面会结束播放。' : '原生版会尽量保持后台播放；系统仍可能因省电策略暂停音频。',
           ),
         ]),
         settingSection(context, '专注', [
@@ -4417,17 +4502,18 @@ class _NookHomeState extends State<NookHome> {
                 onPressed: () async {
                   if (await confirm(
                     '删除本地声音？',
-                    '删除“${l['name']}”的浏览器副本。正在播放的这一轨会被移除，关联收藏会标记缺失；原文件不会被改动。',
+                    kIsWeb ? '删除“${l['name']}”的浏览器副本。正在播放的这一轨会被移除，关联收藏会标记缺失；原文件不会被改动。' : '删除“${l['name']}”的设备副本。正在播放的这一轨会被移除，关联收藏会标记缺失；原文件不会被改动。',
                     accept: '删除声音',
-                  ))
+                  )) {
                     await act('deleteLocal', {'id': l['id']});
+                  }
                 },
               ),
             ),
           ),
           const SizedBox(height: 12),
           Text(
-            '清除网站数据会删除收藏和导入副本。不同浏览器或不同端口的数据不互通。',
+            kIsWeb ? '清除网站数据会删除收藏和导入副本。不同浏览器或不同端口的数据不互通。' : '清除应用数据会删除收藏和导入副本，请谨慎操作。',
             style: TextStyle(fontSize: 12, color: p.muted, height: 1.6),
           ),
         ]),
@@ -4445,7 +4531,7 @@ class _NookHomeState extends State<NookHome> {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '版本 1.1.0 · 多端',
+                    kIsWeb ? '版本 2.0.0 · Web' : '版本 2.0.0 · 原生',
                     style: TextStyle(fontSize: 14, color: p.muted),
                   ),
                 ],
@@ -4457,7 +4543,7 @@ class _NookHomeState extends State<NookHome> {
             context,
             Icons.offline_bolt_outlined,
             '不需要账号，也没有广告',
-            '内置录音按需加载，需要联网；导入的个人音频只存入此浏览器，不会上传。',
+            kIsWeb ? '内置录音按需加载，需要联网；导入的个人音频只存入此浏览器，不会上传。' : '内置录音按需加载，需要联网；导入的个人音频只存入此设备，不会上传。',
           ),
           const SizedBox(height: 20),
           infoRow(
@@ -4471,7 +4557,7 @@ class _NookHomeState extends State<NookHome> {
             context,
             Icons.lock_outline_rounded,
             '数据留在这台设备',
-            '收藏和设置都保存在此浏览器。清除网站数据会一并删除，不同浏览器或不同端口的数据不互通。',
+            kIsWeb ? '收藏和设置都保存在此浏览器。清除网站数据会一并删除，不同浏览器或不同端口的数据不互通。' : '收藏和设置都保存在此设备。清除应用数据会一并删除。',
           ),
         ]),
         Center(

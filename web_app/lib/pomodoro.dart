@@ -1,26 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:js_interop';
 import 'package:flutter/material.dart';
-import 'audio_bridge.dart';
-
-@JS('tingyuChime')
-external bool _chime(JSString kind, JSNumber volume);
-
-@JS('tingyuNotify')
-external bool _notify(JSString title, JSString body);
-
-@JS('tingyuNotificationPermission')
-external JSString _notificationPermission();
-
-@JS('tingyuRequestNotification')
-external JSPromise<JSString> _requestNotification();
-
-@JS('tingyuSetTitle')
-external void _setTitle(JSString title);
-
-@JS('tingyuVibrate')
-external void _vibrate(JSNumber milliseconds);
+import 'audio/nook_controller.dart';
+import 'platform/pomodoro_platform.dart';
 
 enum PomoPhase {
   focus('专注', '把眼前这一件事，做完就好。'),
@@ -145,7 +127,7 @@ class PomodoroController extends ChangeNotifier with WidgetsBindingObserver {
   PomodoroController(this.nook) {
     WidgetsBinding.instance.addObserver(this);
     _restore();
-    notificationPermission = _readPermission();
+    notificationPermission = PomodoroPlatform.permission;
   }
 
   Duration get phaseLength => Duration(
@@ -326,6 +308,7 @@ class PomodoroController extends ChangeNotifier with WidgetsBindingObserver {
     _startTicker();
     _updateTitle();
     if (phase == PomoPhase.focus) unawaited(_playForFocus());
+    _scheduleNotification();
     _persist();
     notifyListeners();
   }
@@ -337,6 +320,7 @@ class PomodoroController extends ChangeNotifier with WidgetsBindingObserver {
     _endAt = null;
     _ticker?.cancel();
     _ticker = null;
+    unawaited(PomodoroPlatform.cancelScheduledNotification());
     _updateTitle();
     _persist();
     notifyListeners();
@@ -348,6 +332,7 @@ class PomodoroController extends ChangeNotifier with WidgetsBindingObserver {
     _endAt = null;
     _ticker?.cancel();
     _ticker = null;
+    unawaited(PomodoroPlatform.cancelScheduledNotification());
     remaining = phaseLength;
     _updateTitle();
     _persist();
@@ -366,6 +351,7 @@ class PomodoroController extends ChangeNotifier with WidgetsBindingObserver {
     }
     phase = next;
     remaining = phaseLength;
+    unawaited(PomodoroPlatform.cancelScheduledNotification());
     _updateTitle();
     if (!silent) {
       lastEvent = '已切换到${phase.label}';
@@ -385,6 +371,7 @@ class PomodoroController extends ChangeNotifier with WidgetsBindingObserver {
     if (phase == PomoPhase.longBreak) focusInCycle = 0;
     phase = next;
     completed = false;
+    unawaited(PomodoroPlatform.cancelScheduledNotification());
     remaining = phaseLength;
     lastEvent = '已跳到${phase.label}';
     completionTick++;
@@ -460,21 +447,33 @@ class PomodoroController extends ChangeNotifier with WidgetsBindingObserver {
 
   void _alert(PomoPhase finished) {
     if (settings.chime && settings.chimeVolume > 0) {
-      try {
-        _chime(settings.chimeKind.toJS, (settings.chimeVolume / 100).toJS);
-      } catch (_) {}
+      unawaited(PomodoroPlatform.chime(settings.chimeKind, settings.chimeVolume));
     }
-    try {
-      _vibrate((settings.chime ? 18 : 8).toJS);
-    } catch (_) {}
-    if (settings.notify && notificationPermission == 'granted') {
+    unawaited(PomodoroPlatform.vibrate());
+    if (settings.notify &&
+        notificationPermission == 'granted' &&
+        !PomodoroPlatform.supportsScheduling) {
       final body = finished == PomoPhase.focus
           ? '专注完成，休息一下。'
           : '休息结束，开始下一轮专注吧。';
-      try {
-        _notify('听隅 · ${finished.label}结束'.toJS, body.toJS);
-      } catch (_) {}
+      unawaited(
+        PomodoroPlatform.notifyNow('听隅 · ${finished.label}结束', body),
+      );
     }
+  }
+
+  void _scheduleNotification() {
+    if (!settings.notify || notificationPermission != 'granted') return;
+    final end = _endAt;
+    if (end == null || !PomodoroPlatform.supportsScheduling) return;
+    final body = phase == PomoPhase.focus ? '专注完成，休息一下。' : '休息结束，开始下一轮专注吧。';
+    unawaited(
+      PomodoroPlatform.scheduleNotification(
+        end,
+        '听隅 · ${phase.label}结束',
+        body,
+      ),
+    );
   }
 
   Future<void> _playForFocus() async {
@@ -496,31 +495,23 @@ class PomodoroController extends ChangeNotifier with WidgetsBindingObserver {
     PomoPhase.longBreak => settings.longMinutes,
   };
 
-  String _readPermission() {
-    try {
-      return _notificationPermission().toDart;
-    } catch (_) {
-      return 'unsupported';
-    }
-  }
-
   Future<String> requestNotifications() async {
-    try {
-      final value = (await _requestNotification().toDart).toDart;
-      notificationPermission = value;
-      notifyListeners();
-      return value;
-    } catch (_) {
-      notificationPermission = 'unsupported';
-      notifyListeners();
-      return notificationPermission;
-    }
+    final value = await PomodoroPlatform.requestNotificationPermission();
+    notificationPermission = value;
+    if (value == 'granted' && running) _scheduleNotification();
+    notifyListeners();
+    return value;
   }
 
   void setNotify(bool value) {
     settings.notify = value;
     if (value && notificationPermission == 'default') {
       unawaited(requestNotifications());
+    }
+    if (!value) {
+      unawaited(PomodoroPlatform.cancelScheduledNotification());
+    } else if (running) {
+      _scheduleNotification();
     }
     _persist();
     notifyListeners();
@@ -546,9 +537,7 @@ class PomodoroController extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   void chimePreview() {
-    try {
-      _chime(settings.chimeKind.toJS, (settings.chimeVolume / 100).toJS);
-    } catch (_) {}
+    unawaited(PomodoroPlatform.chime(settings.chimeKind, settings.chimeVolume));
   }
 
   void setAutoStart(bool value) {
@@ -606,14 +595,13 @@ class PomodoroController extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   void _updateTitle() {
-    try {
-      _setTitle(
-        (running
-                ? '听隅 · ${phase.label} ${clock}'
-                : '听隅 · 给自己，留一小片安静')
-            .toJS,
-      );
-    } catch (_) {}
+    unawaited(
+      PomodoroPlatform.setTitle(
+        running
+            ? '听隅 · ${phase.label} $clock'
+            : '听隅 · 给自己，留一小片安静',
+      ),
+    );
   }
 
   @override

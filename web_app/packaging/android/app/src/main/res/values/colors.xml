@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="colorPrimary">#4F6957</color>
-    <color name="colorPrimaryDark">#223027</color>
-    <color name="colorAccent">#AAC4A2</color>
-    <color name="brand_deep">#223027</color>
-    <color name="brand_bg">#F7F4ED</color>
-    <color name="brand_text">#35433E</color>
-</resources>

@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">听隅</string>
-    <string name="title_activity_main">听隅</string>
-    <string name="package_name">com.citro.tingyu</string>
-    <string name="custom_url_scheme">com.citro.tingyu</string>
-</resources>
