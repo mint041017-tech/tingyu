@@ -20,8 +20,6 @@ def zip_paths(zip_path, roots, excludes=()):
             for base, dirs, files in os.walk(src):
                 dirs[:] = [d for d in dirs if d not in excludes and not d.endswith('.xcuserdata')]
                 for name in files:
-                    if name.endswith('.wav') and '/web/assets/audio/' in (Path(base) / name).as_posix():
-                        continue
                     full = Path(base) / name
                     z.write(full, Path(prefix) / full.relative_to(src))
 
@@ -53,6 +51,10 @@ ios = {
         'file_picker': 'file_picker' in (root / 'pubspec.yaml').read_text(encoding='utf-8'),
         'local_notifications': 'flutter_local_notifications' in (root / 'pubspec.yaml').read_text(encoding='utf-8'),
     },
+    'localSounds': {
+        'count': len(list((root / 'assets/audio/builtin').glob('*.flac'))),
+        'bytes': sum(p.stat().st_size for p in (root / 'assets/audio/builtin').glob('*.flac')),
+    },
 }
 assert ios['bundleIdentifier'] != 'missing'
 assert ios['deviceFamily'] == '1,2'
@@ -72,35 +74,33 @@ macos = {
     'appName': 'Tingyu' if 'PRODUCT_NAME = Tingyu' in mac_appinfo else 'missing',
 }
 assert macos['bundleIdentifier'] != 'missing'
-assert macos['networkClient']
+assert ios['localSounds']['count'] == 28
 
-ios_zip = pack / 'Tingyu-native-v2.0.0-ios-source.zip'
+ios_zip = pack / 'Tingyu-native-v2.1.0-ios-source.zip'
 zip_paths(
     ios_zip,
     [
-        (root / 'ios', 'Tingyu-native-v2.0.0-ios/ios'),
-        (root / 'lib', 'Tingyu-native-v2.0.0-ios/lib'),
-        (root / 'assets', 'Tingyu-native-v2.0.0-ios/assets'),
-        (root / 'web', 'Tingyu-native-v2.0.0-ios/web'),
-        (root / 'pubspec.yaml', 'Tingyu-native-v2.0.0-ios'),
-        (root / 'pubspec.lock', 'Tingyu-native-v2.0.0-ios'),
-        (root / 'analysis_options.yaml', 'Tingyu-native-v2.0.0-ios'),
-        (root / 'README.md', 'Tingyu-native-v2.0.0-ios'),
+        (root / 'ios', 'Tingyu-native-v2.1.0-ios/ios'),
+        (root / 'lib', 'Tingyu-native-v2.1.0-ios/lib'),
+        (root / 'assets', 'Tingyu-native-v2.1.0-ios/assets'),
+        (root / 'pubspec.yaml', 'Tingyu-native-v2.1.0-ios'),
+        (root / 'pubspec.lock', 'Tingyu-native-v2.1.0-ios'),
+        (root / 'analysis_options.yaml', 'Tingyu-native-v2.1.0-ios'),
+        (root / 'README.md', 'Tingyu-native-v2.1.0-ios'),
     ],
     excludes={'build', 'Pods', '.dart_tool', 'node_modules', 'ephemeral'},
 )
-mac_zip = pack / 'Tingyu-native-v2.0.0-macos-source.zip'
+mac_zip = pack / 'Tingyu-native-v2.1.0-macos-source.zip'
 zip_paths(
     mac_zip,
     [
-        (root / 'macos', 'Tingyu-native-v2.0.0-macos/macos'),
-        (root / 'lib', 'Tingyu-native-v2.0.0-macos/lib'),
-        (root / 'assets', 'Tingyu-native-v2.0.0-macos/assets'),
-        (root / 'web', 'Tingyu-native-v2.0.0-macos/web'),
-        (root / 'pubspec.yaml', 'Tingyu-native-v2.0.0-macos'),
-        (root / 'pubspec.lock', 'Tingyu-native-v2.0.0-macos'),
-        (root / 'analysis_options.yaml', 'Tingyu-native-v2.0.0-macos'),
-        (root / 'README.md', 'Tingyu-native-v2.0.0-macos'),
+        (root / 'macos', 'Tingyu-native-v2.1.0-macos/macos'),
+        (root / 'lib', 'Tingyu-native-v2.1.0-macos/lib'),
+        (root / 'assets', 'Tingyu-native-v2.1.0-macos/assets'),
+        (root / 'pubspec.yaml', 'Tingyu-native-v2.1.0-macos'),
+        (root / 'pubspec.lock', 'Tingyu-native-v2.1.0-macos'),
+        (root / 'analysis_options.yaml', 'Tingyu-native-v2.1.0-macos'),
+        (root / 'README.md', 'Tingyu-native-v2.1.0-macos'),
     ],
     excludes={'build', 'Pods', '.dart_tool', 'node_modules', 'ephemeral'},
 )

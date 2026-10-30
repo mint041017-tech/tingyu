@@ -9,14 +9,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
-import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models.dart';
 
-const _audioBase = 'https://obs.chimu-claw.xyz/ambient%20noise/';
 
 class _NativeTrack {
   _NativeTrack(this.id, this.volume);
@@ -177,6 +175,7 @@ class NookController extends ChangeNotifier {
   }
 
   Future<void> bootstrap() async {
+    await loadFullFont();
     try {
       _prefs = await SharedPreferences.getInstance();
       theme = _readSetting('theme');
@@ -738,39 +737,11 @@ class NookController extends ChangeNotifier {
       } else {
         loaded = await _audio.loadFile(file.path);
       }
-    } else if (['white', 'pink', 'brown', 'underwater'].contains(id)) {
-      loaded = await _audio.loadMem('synth_$id.wav', await _synthBytes(id));
     } else {
-      loaded = await _audio.loadMem('$id.loop.wav', await _remoteLoopBytes(id));
+      loaded = await _audio.loadAsset('assets/audio/builtin/$id.flac');
     }
     _sources[id] = loaded;
     return loaded;
-  }
-
-  Future<Uint8List> _remoteLoopBytes(String id) async {
-    final cacheDir = await getApplicationCacheDirectory();
-    final file = File(p.join(cacheDir.path, 'tingyu', '$id.loop.wav'));
-    if (await file.exists()) return file.readAsBytes();
-    final response = await http
-        .get(Uri.parse('$_audioBase$id.wav'))
-        .timeout(const Duration(seconds: 45));
-    if (response.statusCode != 200) {
-      throw StateError('声音加载失败（HTTP ${response.statusCode}），请检查网络。');
-    }
-    final looped = _loopWavBytes(response.bodyBytes);
-    await file.parent.create(recursive: true);
-    await file.writeAsBytes(looped, flush: true);
-    return looped;
-  }
-
-  Future<Uint8List> _synthBytes(String id) async {
-    final cacheDir = await getApplicationCacheDirectory();
-    final file = File(p.join(cacheDir.path, 'tingyu', 'synth_$id.wav'));
-    if (await file.exists()) return file.readAsBytes();
-    final bytes = _loopWavBytes(_generateNoiseWav(id));
-    await file.parent.create(recursive: true);
-    await file.writeAsBytes(bytes, flush: true);
-    return bytes;
   }
 
   Future<void> _import() async {
@@ -976,80 +947,4 @@ Uint8List _loopWavBytes(Uint8List input) {
   } catch (_) {
     return input;
   }
-}
-
-Uint8List _generateNoiseWav(String id) {
-  const sampleRate = 48000;
-  final seconds = id == 'underwater' ? 24 : 24;
-  final frames = sampleRate * seconds;
-  final samples = Float64List(frames);
-  final random = math.Random();
-  var b0 = 0.0, b1 = 0.0, b2 = 0.0, b3 = 0.0, b4 = 0.0, b5 = 0.0, b6 = 0.0;
-  var brown = 0.0, low1 = 0.0, low2 = 0.0;
-  final alpha = 1 - math.exp(-2 * math.pi * 190 / sampleRate);
-  for (var i = 0; i < frames; i++) {
-    final white = random.nextDouble() * 2 - 1;
-    double sample;
-    if (id == 'white') {
-      sample = white;
-    } else if (id == 'pink') {
-      b0 = .99886 * b0 + white * .0555179;
-      b1 = .99332 * b1 + white * .0750759;
-      b2 = .969 * b2 + white * .153852;
-      b3 = .8665 * b3 + white * .3104856;
-      b4 = .55 * b4 + white * .5329522;
-      b5 = -.7616 * b5 - white * .016898;
-      sample = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * .5362;
-      b6 = white * .115926;
-    } else {
-      brown = (brown + .02 * white) / 1.02;
-      sample = brown * 3.5;
-      if (id == 'underwater') {
-        low1 += alpha * (sample - low1);
-        low2 += alpha * (low1 - low2);
-        sample = low2 * (.88 + .12 * math.sin(2 * math.pi * i / sampleRate / 7));
-      }
-    }
-    samples[i] = sample;
-  }
-  var mean = 0.0;
-  for (final sample in samples) {
-    mean += sample;
-  }
-  mean /= frames;
-  var energy = 0.0, peak = 0.0;
-  for (var i = 0; i < frames; i++) {
-    samples[i] -= mean;
-    energy += samples[i] * samples[i];
-    peak = math.max(peak, samples[i].abs());
-  }
-  final gain = math.min(.2 / math.max(1e-8, math.sqrt(energy / frames)), .85 / math.max(1e-8, peak));
-  final pcm = Int16List(frames);
-  for (var i = 0; i < frames; i++) {
-    pcm[i] = (samples[i] * gain * 32767).round().clamp(-32768, 32767).toInt();
-  }
-  return _wavFromPcm(pcm, sampleRate, 1);
-}
-
-Uint8List _wavFromPcm(Int16List samples, int sampleRate, int channels) {
-  final dataLength = samples.length * 2;
-  final out = Uint8List(44 + dataLength);
-  final data = ByteData.sublistView(out);
-  out.setAll(0, 'RIFF'.codeUnits);
-  data.setUint32(4, 36 + dataLength, Endian.little);
-  out.setAll(8, 'WAVE'.codeUnits);
-  out.setAll(12, 'fmt '.codeUnits);
-  data.setUint32(16, 16, Endian.little);
-  data.setUint16(20, 1, Endian.little);
-  data.setUint16(22, channels, Endian.little);
-  data.setUint32(24, sampleRate, Endian.little);
-  data.setUint32(28, sampleRate * channels * 2, Endian.little);
-  data.setUint16(32, channels * 2, Endian.little);
-  data.setUint16(34, 16, Endian.little);
-  out.setAll(36, 'data'.codeUnits);
-  data.setUint32(40, dataLength, Endian.little);
-  for (var i = 0; i < samples.length; i++) {
-    data.setInt16(44 + i * 2, samples[i], Endian.little);
-  }
-  return out;
 }

@@ -1,6 +1,8 @@
+import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:tingyu_web/audio/nook_controller.dart';
+import 'package:tingyu_web/models.dart';
 import 'package:tingyu_web/platform/pomodoro_platform.dart';
 
 void main() {
@@ -12,6 +14,16 @@ void main() {
     await controller.initialize();
     expect(controller.ready, isTrue);
     expect(controller.error, isNull);
+    for (final sound in sounds) {
+      final source = await SoLoud.instance.loadAsset(
+        'assets/audio/builtin/${sound.id}.flac',
+      );
+      expect(
+        SoLoud.instance.getLength(source),
+        greaterThan(Duration.zero),
+        reason: sound.id,
+      );
+    }
     expect(await controller.send('load', {
       'tracks': [
         {'id': 'rain', 'volume': 65},

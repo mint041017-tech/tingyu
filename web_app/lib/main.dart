@@ -16,8 +16,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SemanticsBinding.instance.ensureSemantics();
   await PomodoroPlatform.init();
-  if (!kIsWeb &&
-      (defaultTargetPlatform == TargetPlatform.windows ||
+  if ((defaultTargetPlatform == TargetPlatform.windows ||
           defaultTargetPlatform == TargetPlatform.macOS)) {
     await windowManager.ensureInitialized();
     const options = WindowOptions(
@@ -308,8 +307,8 @@ class _NookHomeState extends State<NookHome> {
   int page = 0;
   int previousPage = 0;
   int _lastPomoTick = 0;
-  bool _introVisible = !kIsWeb;
-  bool _introMounted = !kIsWeb;
+  bool _introVisible = true;
+  bool _introMounted = true;
   String category = '全部';
   String query = '';
   final search = TextEditingController();
@@ -331,8 +330,7 @@ class _NookHomeState extends State<NookHome> {
   }
 
   Future<void> _armNativeIntro() async {
-    if (!kIsWeb &&
-        (defaultTargetPlatform == TargetPlatform.windows ||
+    if ((defaultTargetPlatform == TargetPlatform.windows ||
             defaultTargetPlatform == TargetPlatform.macOS)) {
       for (var i = 0; i < 80; i++) {
         try {
@@ -998,7 +996,7 @@ class _NookHomeState extends State<NookHome> {
         page = 2;
         category = '本地';
       });
-      toast(kIsWeb ? '声音已保存在此浏览器，可以加入混音了。' : '声音已保存在此设备，可以加入混音了。');
+      toast('声音已保存在此设备，可以加入混音了。');
     }
   }
 
@@ -1775,7 +1773,7 @@ class _NookHomeState extends State<NookHome> {
             ),
             const SizedBox(height: 8),
             Text(
-              kIsWeb ? '提示：计时在切换到其他页面后仍会继续；关闭应用后，会按结束时间恢复。网页版不能替代系统闹钟。' : '提示：计时在切换到其他页面或后台后仍会继续；系统仍可能因省电策略暂停音频，请勿将计时用作系统闹钟。',
+              '提示：计时在切换到其他页面或后台后仍会继续；系统仍可能因省电策略暂停音频，请勿将计时用作系统闹钟。',
               style: TextStyle(fontSize: 12, color: p.muted, height: 1.7),
             ),
           ],
@@ -2352,9 +2350,9 @@ class _NookHomeState extends State<NookHome> {
 
   String get _notificationHint => switch (pomo.notificationPermission) {
     'granted' => pomo.settings.notify ? '完成时发送系统通知。' : '已允许，但当前没有开启。',
-    'denied' => '${kIsWeb ? '浏览器' : '系统'}已拒绝通知，页内提醒仍会显示。',
+    'denied' => '系统已拒绝通知，页内提醒仍会显示。',
     'unsupported' => '当前环境不支持系统通知，页内提醒仍会显示。',
-    _ => '首次开启时会请求${kIsWeb ? '浏览器' : '系统'}权限。',
+    _ => '首次开启时会请求系统权限。',
   };
 
   Widget _pomoDurationRow(
@@ -2653,7 +2651,7 @@ class _NookHomeState extends State<NookHome> {
       return;
     }
     if (permission == 'denied') {
-      toast(kIsWeb ? '浏览器已拒绝通知，可以在站点设置里重新允许。' : '系统已拒绝通知，可以在系统设置里重新允许。');
+      toast('系统已拒绝通知，可以在系统设置里重新允许。');
       return;
     }
     if (permission == 'unsupported') {
@@ -2704,7 +2702,7 @@ class _NookHomeState extends State<NookHome> {
                       ? 1.85
                       : 2.55,
                   child: Image.asset(
-                    'web/assets/images/rain-nook.webp',
+                    'assets/images/rain-nook.webp',
                     fit: BoxFit.cover,
                     alignment: const Alignment(0, .25),
                     color: p.dark ? const Color(0xffc6ccbd) : null,
@@ -2898,7 +2896,7 @@ class _NookHomeState extends State<NookHome> {
             const SizedBox(width: 7),
             Expanded(
               child: Text(
-                kIsWeb ? '网页版在锁屏或切换应用后可能暂停声音；请勿将计时用作闹钟。' : '锁屏或切到后台时，音频会尽量继续；系统仍可能因省电策略暂停，请勿将计时用作闹钟。',
+                '锁屏或切到后台时，音频会尽量继续；系统仍可能因省电策略暂停，请勿将计时用作闹钟。',
                 style: TextStyle(fontSize: 12, color: p.muted, height: 1.6),
               ),
             ),
@@ -3642,7 +3640,7 @@ class _NookHomeState extends State<NookHome> {
                 ),
                 const SizedBox(height: 9),
                 Text(
-                  kIsWeb ? '音频只保存在此浏览器，不会上传。支持浏览器可解码的常见格式，单个文件不超过 50 MB，时长 5 秒到 10 分钟。' : '音频只保存在此设备，不会上传。支持 WAV、MP3、M4A、OGG 等常见格式，单个文件不超过 50 MB。',
+                  '音频只保存在此设备，不会上传。支持 WAV、MP3、M4A、OGG 等常见格式，单个文件不超过 50 MB。',
                   style: TextStyle(fontSize: 14, color: p.muted, height: 1.6),
                 ),
                 const SizedBox(height: 16),
@@ -4413,7 +4411,7 @@ class _NookHomeState extends State<NookHome> {
             context,
             Icons.headphones_outlined,
             '后台与锁屏',
-            kIsWeb ? '网页版在锁屏或切换应用后可能暂停声音；系统媒体控件取决于浏览器支持，关闭页面会结束播放。' : '原生版会尽量保持后台播放；系统仍可能因省电策略暂停音频。',
+            '原生版会尽量保持后台播放；系统仍可能因省电策略暂停音频。',
           ),
         ]),
         settingSection(context, '专注', [
@@ -4502,7 +4500,7 @@ class _NookHomeState extends State<NookHome> {
                 onPressed: () async {
                   if (await confirm(
                     '删除本地声音？',
-                    kIsWeb ? '删除“${l['name']}”的浏览器副本。正在播放的这一轨会被移除，关联收藏会标记缺失；原文件不会被改动。' : '删除“${l['name']}”的设备副本。正在播放的这一轨会被移除，关联收藏会标记缺失；原文件不会被改动。',
+                    '删除“${l['name']}”的设备副本。正在播放的这一轨会被移除，关联收藏会标记缺失；原文件不会被改动。',
                     accept: '删除声音',
                   )) {
                     await act('deleteLocal', {'id': l['id']});
@@ -4513,7 +4511,7 @@ class _NookHomeState extends State<NookHome> {
           ),
           const SizedBox(height: 12),
           Text(
-            kIsWeb ? '清除网站数据会删除收藏和导入副本。不同浏览器或不同端口的数据不互通。' : '清除应用数据会删除收藏和导入副本，请谨慎操作。',
+            '清除应用数据会删除收藏和导入副本，请谨慎操作。',
             style: TextStyle(fontSize: 12, color: p.muted, height: 1.6),
           ),
         ]),
@@ -4531,7 +4529,7 @@ class _NookHomeState extends State<NookHome> {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    kIsWeb ? '版本 2.0.0 · Web' : '版本 2.0.0 · 原生',
+                    '版本 2.1.0 · 原生',
                     style: TextStyle(fontSize: 14, color: p.muted),
                   ),
                 ],
@@ -4543,7 +4541,7 @@ class _NookHomeState extends State<NookHome> {
             context,
             Icons.offline_bolt_outlined,
             '不需要账号，也没有广告',
-            kIsWeb ? '内置录音按需加载，需要联网；导入的个人音频只存入此浏览器，不会上传。' : '内置录音按需加载，需要联网；导入的个人音频只存入此设备，不会上传。',
+            '内置声音随安装包保存，无需联网；导入的个人音频只存入此设备，不会上传。',
           ),
           const SizedBox(height: 20),
           infoRow(
@@ -4557,7 +4555,7 @@ class _NookHomeState extends State<NookHome> {
             context,
             Icons.lock_outline_rounded,
             '数据留在这台设备',
-            kIsWeb ? '收藏和设置都保存在此浏览器。清除网站数据会一并删除，不同浏览器或不同端口的数据不互通。' : '收藏和设置都保存在此设备。清除应用数据会一并删除。',
+            '收藏和设置都保存在此设备。清除应用数据会一并删除。',
           ),
         ]),
         Center(
@@ -4653,6 +4651,35 @@ class _BreathingPageState extends State<BreathingPage>
   bool running = true;
   bool done = false;
 
+  int get totalSeconds => minutes * 60;
+  int get elapsedSeconds => stopwatch.elapsed.inSeconds.clamp(0, totalSeconds);
+  double get sessionProgress => totalSeconds == 0
+      ? 0
+      : (elapsedSeconds / totalSeconds).clamp(0.0, 1.0);
+  bool get inhaling => animation.value < .4;
+  double get phaseProgress => inhaling
+      ? (animation.value / .4).clamp(0.0, 1.0)
+      : ((animation.value - .4) / .6).clamp(0.0, 1.0);
+  int get phaseSecondsLeft {
+    final total = inhaling ? 4 : 6;
+    return (total * (1 - phaseProgress)).ceil().clamp(1, total);
+  }
+
+  String get phaseTitle => done
+      ? '这一轮结束了'
+      : !running
+      ? '随时开始'
+      : inhaling
+      ? '吸气'
+      : '呼气';
+  String get phaseHint => done
+      ? '舒服就好，想再来一次随时开始。'
+      : !running
+      ? '按自己的节奏，准备好了再继续。'
+      : inhaling
+      ? '慢慢吸气，让肩膀松下来。'
+      : '轻轻呼气，不用刻意用力。';
+
   @override
   void initState() {
     super.initState();
@@ -4664,7 +4691,7 @@ class _BreathingPageState extends State<BreathingPage>
     stopwatch.start();
     ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      if (stopwatch.elapsed.inSeconds >= minutes * 60) {
+      if (stopwatch.elapsed.inSeconds >= totalSeconds) {
         stopwatch.stop();
         animation.stop();
         running = false;
@@ -4697,6 +4724,34 @@ class _BreathingPageState extends State<BreathingPage>
     });
   }
 
+  void resetCycle() {
+    setState(() {
+      done = false;
+      stopwatch.reset();
+      animation.value = 0;
+      if (running) {
+        stopwatch.start();
+        animation.repeat();
+      } else {
+        animation.stop();
+      }
+    });
+  }
+
+  void chooseMinutes(int value) {
+    setState(() {
+      minutes = value;
+      done = false;
+      stopwatch
+        ..reset()
+        ..start();
+      animation
+        ..value = 0
+        ..repeat();
+      running = true;
+    });
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -4711,179 +4766,554 @@ class _BreathingPageState extends State<BreathingPage>
     final p = Palette.of(context);
     final reduce =
         widget.reducedMotion || MediaQuery.disableAnimationsOf(context);
+    final accent = p.accent;
+    final orbSize = math.min(
+      MediaQuery.sizeOf(context).width - 64,
+      MediaQuery.sizeOf(context).height < 720 ? 300.0 : 348.0,
+    ).clamp(230.0, 348.0).toDouble();
+
     return Scaffold(
       backgroundColor: p.bg,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 560),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-              child: Column(
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (reduce)
+            CustomPaint(
+              painter: _BreathBackdropPainter(
+                breath: .55,
+                accent: accent,
+                background: p.bg,
+                soft: p.soft,
+                dark: p.dark,
+              ),
+            )
+          else
+            AnimatedBuilder(
+              animation: animation,
+              builder: (context, _) {
+                final breath = inhaling
+                    ? Curves.easeInOutSine.transform(phaseProgress)
+                    : 1 - Curves.easeInOutSine.transform(phaseProgress);
+                return CustomPaint(
+                  painter: _BreathBackdropPainter(
+                    breath: breath,
+                    accent: accent,
+                    background: p.bg,
+                    soft: p.soft,
+                    dark: p.dark,
+                  ),
+                );
+              },
+            ),
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(22, 10, 22, 26),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 620),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      IconButton(
-                        tooltip: '返回',
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back_rounded, size: 22),
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.only(top: 8),
-                              child: Text(
-                                '呼吸',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w600,
+                      Row(
+                        children: [
+                          _BreathGlassButton(
+                            icon: Icons.arrow_back_rounded,
+                            tooltip: '返回',
+                            color: p.text,
+                            surface: p.surface,
+                            border: p.border,
+                            onTap: () => Navigator.pop(context),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '呼吸',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 1,
+                                    color: p.text,
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  '4 秒吸气 · 6 秒呼气 · 不必屏息',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: p.muted,
+                                    letterSpacing: .2,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 4),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: p.surface.withValues(alpha: .72),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(color: p.border),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.timer_outlined,
+                                  size: 14,
+                                  color: p.accent,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '$minutes 分钟',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: p.accent,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 26),
+                      Center(
+                        child: AnimatedBuilder(
+                          animation: animation,
+                          builder: (context, _) {
+                            final breath = inhaling
+                                ? Curves.easeInOutSine.transform(phaseProgress)
+                                : 1 -
+                                      Curves.easeInOutSine.transform(
+                                        phaseProgress,
+                                      );
+                            final scale = reduce ? 1.0 : .78 + .22 * breath;
+                            return SizedBox.square(
+                              dimension: orbSize,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  TweenAnimationBuilder<double>(
+                                    tween: Tween<double>(
+                                      begin: 0,
+                                      end: sessionProgress,
+                                    ),
+                                    duration: const Duration(seconds: 1),
+                                    curve: Curves.linear,
+                                    builder: (context, progress, _) =>
+                                        CustomPaint(
+                                          size: Size.square(orbSize),
+                                          painter: _BreathSessionRingPainter(
+                                            progress: done ? 1 : progress,
+                                            color: accent,
+                                            track: p.border.withValues(
+                                              alpha: .65,
+                                            ),
+                                            tick: p.muted.withValues(
+                                              alpha: .28,
+                                            ),
+                                          ),
+                                        ),
+                                  ),
+                                  CustomPaint(
+                                    size: Size.square(orbSize),
+                                    painter: _BreathAuraPainter(
+                                      breath: reduce ? .55 : breath,
+                                      color: accent,
+                                    ),
+                                  ),
+                                  Transform.scale(
+                                    scale: scale,
+                                    child: SizedBox.square(
+                                      dimension: orbSize * .72,
+                                      child: CustomPaint(
+                                        painter: _BreathCorePainter(
+                                          breath: reduce ? .55 : breath,
+                                          phase: phaseProgress,
+                                          color: accent,
+                                          surface: p.surface,
+                                          soft: p.soft,
+                                          border: p.border,
+                                          dark: p.dark,
+                                          active: running && !done,
+                                        ),
+                                        child: Center(
+                                          child: Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: orbSize * .11,
+                                            ),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                AnimatedSwitcher(
+                                                  duration: const Duration(
+                                                    milliseconds: 420,
+                                                  ),
+                                                  switchInCurve: Curves.easeOutCubic,
+                                                  switchOutCurve: Curves.easeInCubic,
+                                                  transitionBuilder:
+                                                      (child, anim) =>
+                                                          FadeTransition(
+                                                            opacity: anim,
+                                                            child: SlideTransition(
+                                                              position:
+                                                                  Tween<Offset>(
+                                                                    begin:
+                                                                        const Offset(
+                                                                          0,
+                                                                          .12,
+                                                                        ),
+                                                                    end: Offset
+                                                                        .zero,
+                                                                  ).animate(anim),
+                                                              child: child,
+                                                            ),
+                                                          ),
+                                                  child: Text(
+                                                    phaseTitle,
+                                                    key: ValueKey(phaseTitle),
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                      fontSize: 28,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      letterSpacing: 4,
+                                                      color: accent,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 9),
+                                                Text(
+                                                  done
+                                                      ? '舒服就好'
+                                                      : !running
+                                                      ? clockText(
+                                                          math.max(
+                                                            0,
+                                                            totalSeconds -
+                                                                elapsedSeconds,
+                                                          ),
+                                                        )
+                                                      : '$phaseSecondsLeft 秒',
+                                                  style: TextStyle(
+                                                    fontSize: 17,
+                                                    color: p.muted,
+                                                    letterSpacing: 1,
+                                                    fontFeatures: const [
+                                                      FontFeature
+                                                          .tabularFigures(),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 14),
+                                                Text(
+                                                  phaseHint,
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    height: 1.65,
+                                                    color: p.muted,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  if (!running && !done)
+                                    Positioned(
+                                      bottom: orbSize * .035,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: p.surface.withValues(
+                                            alpha: .8,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            999,
+                                          ),
+                                          border: Border.all(color: p.border),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.touch_app_outlined,
+                                              size: 13,
+                                              color: p.accent,
+                                            ),
+                                            const SizedBox(width: 5),
+                                            Text(
+                                              '继续时从当前节奏开始',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: p.muted,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      Center(
+                        child: Text(
+                          done
+                              ? '这一轮呼吸已完成'
+                              : '本次 $minutes 分钟 · 还剩 ${clockText(math.max(0, totalSeconds - elapsedSeconds))}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: p.muted,
+                            letterSpacing: .3,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+                        decoration: BoxDecoration(
+                          color: p.surface.withValues(alpha: .82),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: p.border),
+                          boxShadow: [
+                            BoxShadow(
+                              color: p.dark
+                                  ? Colors.black.withValues(alpha: .18)
+                                  : p.accent.withValues(alpha: .05),
+                              blurRadius: 28,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  '留一点时间',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: p.text,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  '选择这一轮的长度',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: p.muted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                for (var i = 0; i < 3; i++) ...[
+                                  if (i > 0) const SizedBox(width: 8),
+                                  Expanded(
+                                    child: _BreathDurationButton(
+                                      label: '${[1, 3, 5][i]} 分钟',
+                                      selected: minutes == [1, 3, 5][i],
+                                      color: p.accent,
+                                      surface: p.surface,
+                                      border: p.border,
+                                      soft: p.soft,
+                                      textColor: p.muted,
+                                      onTap: () =>
+                                          chooseMinutes([1, 3, 5][i]),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                _BreathGlassButton(
+                                  icon: Icons.replay_rounded,
+                                  tooltip: '重新开始本轮',
+                                  color: p.muted,
+                                  surface: p.surface,
+                                  border: p.border,
+                                  onTap: resetCycle,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: SizedBox(
+                                    height: 54,
+                                    child: FilledButton.icon(
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: p.accent,
+                                        foregroundColor: p.onAccent,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+                                      ),
+                                      onPressed: toggle,
+                                      icon: Icon(
+                                        done
+                                            ? Icons.refresh_rounded
+                                            : running
+                                            ? Icons.pause_rounded
+                                            : Icons.play_arrow_rounded,
+                                        size: 21,
+                                      ),
+                                      label: Text(
+                                        done
+                                            ? '再呼吸一会儿'
+                                            : running
+                                            ? '暂停引导'
+                                            : '继续引导',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
                             Text(
-                              '吸气 4 秒，呼气 6 秒。不必屏息。',
-                              style: TextStyle(fontSize: 14, color: p.muted),
+                              '引导结束不会关闭混音。感到不适时，请停止。',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 11,
+                                height: 1.6,
+                                color: p.muted,
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 26),
-                  SizedBox(
-                    height: 250,
-                    child: Center(
-                      child: AnimatedBuilder(
-                        animation: animation,
-                        builder: (ctx, _) {
-                          final value = animation.value;
-                          final phase = value < .4
-                              ? value / .4
-                              : 1 - (value - .4) / .6;
-                          return Transform.scale(
-                            scale: reduce
-                                ? 1
-                                : .78 +
-                                      Curves.easeInOut.transform(
-                                            phase.clamp(0, 1),
-                                          ) *
-                                          .22,
-                            child: Container(
-                              width: 220,
-                              height: 220,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: p.soft,
-                                border: Border.all(
-                                  color: p.accent.withValues(alpha: .18),
-                                  width: 15,
-                                ),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    done
-                                        ? '很好，就这样'
-                                        : !running
-                                        ? '按自己的节奏'
-                                        : value < .4
-                                        ? '慢慢吸气'
-                                        : '轻轻呼气',
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      color: p.accent,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    clockText(
-                                      math.max(
-                                        0,
-                                        minutes * 60 -
-                                            stopwatch.elapsed.inSeconds,
-                                      ),
-                                    ),
-                                    style: TextStyle(
-                                      color: p.muted,
-                                      fontSize: 15,
-                                      fontFeatures: const [
-                                        FontFeature.tabularFigures(),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [1, 3, 5]
-                        .map(
-                          (m) => Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 5),
-                            child: ChoiceChip(
-                              label: Text('$m 分钟'),
-                              selected: minutes == m,
-                              showCheckmark: false,
-                              selectedColor: p.soft,
-                              backgroundColor: p.surface,
-                              side: BorderSide(
-                                color: minutes == m ? p.accent : p.border,
-                              ),
-                              shape: const StadiumBorder(),
-                              labelStyle: TextStyle(
-                                fontSize: 14,
-                                color: minutes == m ? p.accent : p.muted,
-                              ),
-                              onSelected: (_) {
-                                setState(() {
-                                  minutes = m;
-                                  stopwatch.reset();
-                                  stopwatch.start();
-                                  done = false;
-                                  running = true;
-                                  animation.value = 0;
-                                  animation.repeat();
-                                });
-                              },
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                  const SizedBox(height: 22),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: toggle,
-                      child: Text(
-                        done
-                            ? '再呼吸一会儿'
-                            : running
-                            ? '暂停引导'
-                            : '继续引导',
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '引导结束不会关闭混音。感到不适时，请停止。',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: p.muted, fontSize: 12, height: 1.6),
-                  ),
-                ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BreathGlassButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final Color color;
+  final Color surface;
+  final Color border;
+  final VoidCallback onTap;
+
+  const _BreathGlassButton({
+    required this.icon,
+    required this.tooltip,
+    required this.color,
+    required this.surface,
+    required this.border,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tactile(
+      pressedScale: .92,
+      child: Tooltip(
+        message: tooltip,
+        child: Material(
+          color: surface.withValues(alpha: .72),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(color: border),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(15),
+            onTap: onTap,
+            child: SizedBox(
+              width: 48,
+              height: 48,
+              child: Icon(icon, size: 21, color: color),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BreathDurationButton extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final Color color;
+  final Color surface;
+  final Color border;
+  final Color soft;
+  final Color textColor;
+  final VoidCallback onTap;
+
+  const _BreathDurationButton({
+    required this.label,
+    required this.selected,
+    required this.color,
+    required this.surface,
+    required this.border,
+    required this.soft,
+    required this.textColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tactile(
+      pressedScale: .95,
+      hoverScale: 1.01,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 240),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          color: selected ? soft : surface.withValues(alpha: .6),
+          borderRadius: BorderRadius.circular(13),
+          border: Border.all(color: selected ? color : border),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(13),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(13),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  color: selected ? color : textColor,
+                ),
               ),
             ),
           ),
@@ -4891,6 +5321,286 @@ class _BreathingPageState extends State<BreathingPage>
       ),
     );
   }
+}
+
+class _BreathBackdropPainter extends CustomPainter {
+  final double breath;
+  final Color accent;
+  final Color background;
+  final Color soft;
+  final bool dark;
+
+  const _BreathBackdropPainter({
+    required this.breath,
+    required this.accent,
+    required this.background,
+    required this.soft,
+    required this.dark,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            background,
+            Color.lerp(background, soft, dark ? .45 : .65)!,
+            background,
+          ],
+          stops: const [0, .55, 1],
+        ).createShader(rect),
+    );
+    final glow = Paint()
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 80)
+      ..color = accent.withValues(alpha: dark ? .075 : .10);
+    canvas.drawCircle(
+      Offset(size.width * .24, size.height * (.25 - breath * .02)),
+      size.width * .45,
+      glow,
+    );
+    canvas.drawCircle(
+      Offset(size.width * .82, size.height * (.34 + breath * .03)),
+      size.width * .34,
+      glow..color = accent.withValues(alpha: dark ? .055 : .075),
+    );
+    final dot = Paint()..color = accent.withValues(alpha: dark ? .14 : .11);
+    for (var i = 0; i < 30; i++) {
+      final x =
+          (i * 47.0) % size.width +
+          math.sin(breath * math.pi * 2 + i) * 9;
+      final y =
+          (i * 83.0) % size.height +
+          math.cos(breath * math.pi * 2 + i * .7) * 13;
+      canvas.drawCircle(
+        Offset(x, y),
+        i % 7 == 0 ? 1.8 : 1.1,
+        dot..color = accent.withValues(alpha: dark ? .14 : .09),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BreathBackdropPainter oldDelegate) =>
+      oldDelegate.breath != breath ||
+      oldDelegate.accent != accent ||
+      oldDelegate.background != background ||
+      oldDelegate.soft != soft ||
+      oldDelegate.dark != dark;
+}
+
+class _BreathSessionRingPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  final Color track;
+  final Color tick;
+
+  const _BreathSessionRingPainter({
+    required this.progress,
+    required this.color,
+    required this.track,
+    required this.tick,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 5;
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2
+        ..color = track,
+    );
+    for (var i = 0; i < 72; i++) {
+      final angle = i * math.pi / 36 - math.pi / 2;
+      final start = radius - 6;
+      final end = start - (i % 6 == 0 ? 4 : 2);
+      canvas.drawLine(
+        center + Offset(math.cos(angle) * start, math.sin(angle) * start),
+        center + Offset(math.cos(angle) * end, math.sin(angle) * end),
+        Paint()
+          ..strokeWidth = 1
+          ..strokeCap = StrokeCap.round
+          ..color = tick,
+      );
+    }
+    if (progress <= .0005) return;
+    final sweep = math.pi * 2 * progress.clamp(0.0, 1.0);
+    final arc = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 2.4
+      ..shader = SweepGradient(
+        startAngle: -math.pi / 2,
+        endAngle: math.pi * 3 / 2,
+        colors: [color.withValues(alpha: .35), color],
+      ).createShader(rect);
+    canvas.drawArc(rect, -math.pi / 2, sweep, false, arc);
+    final angle = -math.pi / 2 + sweep;
+    canvas.drawCircle(
+      center + Offset(math.cos(angle) * radius, math.sin(angle) * radius),
+      3.2,
+      Paint()..color = color,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _BreathSessionRingPainter oldDelegate) =>
+      oldDelegate.progress != progress ||
+      oldDelegate.color != color ||
+      oldDelegate.track != track ||
+      oldDelegate.tick != tick;
+}
+
+class _BreathAuraPainter extends CustomPainter {
+  final double breath;
+  final Color color;
+
+  const _BreathAuraPainter({required this.breath, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final base = size.width * .355;
+    for (var i = 0; i < 3; i++) {
+      final radius = base * (1 + i * .105 + breath * .012);
+      canvas.drawCircle(
+        center,
+        radius,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1
+          ..color = color.withValues(alpha: .12 - i * .022),
+      );
+    }
+    canvas.drawCircle(
+      center,
+      base * .98,
+      Paint()
+        ..color = color.withValues(alpha: .055)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _BreathAuraPainter oldDelegate) =>
+      oldDelegate.breath != breath || oldDelegate.color != color;
+}
+
+class _BreathCorePainter extends CustomPainter {
+  final double breath;
+  final double phase;
+  final Color color;
+  final Color surface;
+  final Color soft;
+  final Color border;
+  final bool dark;
+  final bool active;
+
+  const _BreathCorePainter({
+    required this.breath,
+    required this.phase,
+    required this.color,
+    required this.surface,
+    required this.soft,
+    required this.border,
+    required this.dark,
+    required this.active,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 2;
+    canvas.drawCircle(
+      center,
+      radius * .92,
+      Paint()
+        ..color = color.withValues(alpha: .10 + breath * .05)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 26),
+    );
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(-.28, -.34),
+          radius: 1.15,
+          colors: [
+            Color.lerp(surface, Colors.white, dark ? .02 : .55)!,
+            Color.lerp(soft, color, dark ? .18 : .10)!,
+            Color.lerp(surface, color, dark ? .08 : .04)!,
+          ],
+          stops: const [0, .58, 1],
+        ).createShader(rect),
+    );
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2
+        ..color = border.withValues(alpha: .8),
+    );
+    for (var i = 1; i <= 2; i++) {
+      canvas.drawCircle(
+        center,
+        radius * (1 - i * .11),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = .8
+          ..color = color.withValues(alpha: .08),
+      );
+    }
+    if (active) {
+      final sweep = math.pi * 2 * phase.clamp(0.0, 1.0);
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius * .84),
+        -math.pi / 2,
+        sweep,
+        false,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = 2
+          ..color = color.withValues(alpha: .5),
+      );
+    }
+    // A quiet leaf watermark, echoing the brand mark.
+    canvas.save();
+    canvas.translate(center.dx, center.dy + radius * .34);
+    canvas.scale(radius / 1024);
+    canvas.translate(-512, -512);
+    final leaf = Path()
+      ..moveTo(512, 184)
+      ..cubicTo(666, 280, 732, 424, 688, 574)
+      ..cubicTo(658, 678, 576, 752, 512, 792)
+      ..cubicTo(448, 752, 366, 678, 336, 574)
+      ..cubicTo(292, 424, 358, 280, 512, 184)
+      ..close();
+    canvas.drawPath(
+      leaf,
+      Paint()..color = color.withValues(alpha: dark ? .045 : .035),
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _BreathCorePainter oldDelegate) =>
+      oldDelegate.breath != breath ||
+      oldDelegate.phase != phase ||
+      oldDelegate.color != color ||
+      oldDelegate.active != active ||
+      oldDelegate.dark != dark;
 }
 
 class _PomoRingPainter extends CustomPainter {

@@ -23,7 +23,6 @@ class PomodoroPlatform {
   /// 桌面端应用进程在后台仍运行，完成时即时提示；
   /// Android/iOS 用系统定时通知覆盖锁屏与后台。
   static bool get supportsScheduling =>
-      !kIsWeb &&
       (defaultTargetPlatform == TargetPlatform.android ||
           defaultTargetPlatform == TargetPlatform.iOS);
 
@@ -205,8 +204,7 @@ class PomodoroPlatform {
 
   static Future<void> setTitle(String title) async {
     try {
-      if (!kIsWeb &&
-          (defaultTargetPlatform == TargetPlatform.windows ||
+      if ((defaultTargetPlatform == TargetPlatform.windows ||
               defaultTargetPlatform == TargetPlatform.macOS ||
               defaultTargetPlatform == TargetPlatform.linux)) {
         await windowManager.setTitle(title);
