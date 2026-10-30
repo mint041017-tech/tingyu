@@ -22,7 +22,6 @@ Future<void> _pump(
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  await _loadFonts();
   await tester.pumpWidget(
     MaterialApp(
       theme: ThemeData(
@@ -34,9 +33,16 @@ Future<void> _pump(
   );
   await tester.pump(const Duration(milliseconds: 600));
   await expectLater(find.byType(BreathingPage), matchesGoldenFile(golden));
+  await tester.pumpWidget(const SizedBox.shrink());
+  await tester.pump(const Duration(milliseconds: 20));
 }
 
 void main() {
+  final binding = TestWidgetsFlutterBinding.ensureInitialized();
+  setUpAll(() async {
+    binding.platformDispatcher.views.first;
+    await _loadFonts();
+  });
   testWidgets('breathing phone light', (tester) async {
     await _pump(
       tester,

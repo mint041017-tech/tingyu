@@ -59,6 +59,17 @@ void main() {
     await PomodoroPlatform.chime('bell', 40);
     await Future<void>.delayed(const Duration(milliseconds: 600));
 
+    // Leave the developer machine with the normal first-run draft, not test data.
+    await controller.send('load', {
+      'tracks': [
+        {'id': 'rain', 'volume': 65},
+        {'id': 'forest', 'volume': 25},
+        {'id': 'brown', 'volume': 20},
+      ],
+      'title': '窗边一页',
+      'autoplay': false,
+    });
+    controller.setTheme('system');
     controller.dispose();
   });
 }
